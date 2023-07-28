@@ -1,0 +1,24 @@
+[package]
+name = "pano"
+version = "0.1.0"
+edition = "2021"
+panic = "abort"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+maths = { path = "../maths" }
+optimisation = { path = "../optimisation" }
+image = { path = "../image" }
+rawloader = "0.37.1"
+opencv = "0.77"
+rayon = "*"
+
+
+#Compile a staticlib for C usage (it is necesssary to also have 'lib' for the rust bin folder to work)
+[lib]
+name = "pano"
+crate-type = ["staticlib","lib"]
+
+# [profile.release]
+# lto = "thin" # "fat" does even more LTO but takes SO LONG
