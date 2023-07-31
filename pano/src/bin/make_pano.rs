@@ -22,19 +22,9 @@ use rayon::prelude::*;
 type FloatType = f64;
 
 
+
 fn main() -> Result<(), Box<dyn std::error::Error>>
 {
-    // let mut camera = panorama::CameraModel::<FloatType>::default();
-    // camera.radial_distortion = PTLens(0.755, -1.915, 1.579);
-    // camera.linearity = 0.5;
-    // let pt_original = maths::linear_algebra::Vector([0.1, 0.76]);
-    // let pt3d = camera.project_from_film(pt_original);
-    // let pt2d = camera.project_to_film(pt3d);
-    // println!("{:#?}", pt_original);pano_final_day.png output_prague.jpeg pano69.jpg
-    // println!("{:#?}", pt2d);
-    // todo!();
-
-
     /* Load images and detect features (this happens in PanoImage::new) */
     let start = time::now();
     let file_paths: Vec<_> = std::env::args().skip(1).collect();
@@ -220,11 +210,12 @@ fn render(renderer: &PanoRenderer<3,CameraModel<f32>>, is_360: bool, camera: Cam
     };
     pano.save("PANO_TEST.png");
     let (width, height) = (pano.width, pano.height);
-    pano.data.par_iter_mut().skip(1).step_by(3).for_each(|x| *x = *x * 0.56);
+    // pano.data.par_iter_mut().skip(1).step_by(3).for_each(|x| *x = *x * 0.56);
     let mut as_u8: Vec<_> = pano.data.into_par_iter().map(|x| {
-        let exposure_adjusted = (x.max(0.0) * exposure).powf(1.65);
-        let compressed = (exposure_adjusted / (exposure_adjusted + 1.0));
-        (encode_sRGB(compressed) * 255.0) as u8
+        // let exposure_adjusted = (x.max(0.0) * exposure).powf(1.65);
+        // let compressed = (exposure_adjusted / (exposure_adjusted + 1.0));
+        // (encode_sRGB(compressed) * 255.0) as u8
+        (encode_sRGB(x) * 255.0) as u8
     }).collect();
     return ImageBuffer::new_with_data(width, height, as_u8);
 }
