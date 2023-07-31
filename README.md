@@ -13,8 +13,6 @@ This runs the alignment process, outputting camera calibration details before en
 
 It requires Rust/Cargo and OpenCV to be installed on your computer, the Homebrew OpenCV package should work on macs. Check [opencv-rust](https://github.com/twistedfall/opencv-rust) if you have any issues.
 
-Note: Currently only raw camera files are supported, as that was convenient during development. This silly issue will be fixed as soon as possible.
-
 ## Alignment process
 
 Firstly, images are aligned in pairs, using RANSAC to exclude false feature matches. Secondly, the panorama is built up by adding images one by one, performing bundle adjustment optimisation at each step to improve accuracy.
