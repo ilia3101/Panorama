@@ -10,6 +10,7 @@ use pano::features::{SIFTDescriptor};
 use image::imagebuffer::ImageBuffer;
 use std::error::Error;
 use rayon::prelude::*;
+use crate::read_image::SourceImage;
 
 
 /* Runs sift and maps coordinates in to +-0.5 range */
@@ -25,20 +26,13 @@ pub fn run_sift(image: &mut ImageBuffer<1,u8>) -> Result<(Vec<Point2D<f32>>, Vec
     ))
 }
 
-use crate::read_image::SourceImage;
+/************************************ source image ******************************/
 
-/* TODO: clean this up. */
-pub fn find_keypoints_in_rawimage(file_path: &str) -> Result<(Vec<Point2D<f32>>, Vec<SIFTDescriptor>), Box<dyn Error>> {
-    let mut features_image = SourceImage::new(file_path)?.get_features_image()?;
-    run_sift(&mut features_image)
-}
-
-/************************************ Match storage data structure ******************************/
-
-#[derive(Clone,Debug)]
+#[derive(Debug)]
 pub struct PanoImage<T,D> {
     pub file_path: String,
     pub file_name: String,
+    pub image: SourceImage,
     pub width: usize,
     pub height: usize,
     pub keypoints: Vec<Point2D<T>>,
@@ -47,11 +41,16 @@ pub struct PanoImage<T,D> {
 
 impl<T:From<f32>> PanoImage<T, SIFTDescriptor> {
     pub fn new(file_path: &str) -> Result<Self, Box<dyn Error>> {
+        let image = SourceImage::new(file_path)?;
         let file_name = std::path::Path::new(file_path).file_name().ok_or("File path error.")?.to_str().ok_or("OsStr to str error")?;
-        let (keypoints, descriptors) = find_keypoints_in_rawimage(file_path)?;
+
+        let mut features_image = image.get_features_image()?;
+        let (keypoints, descriptors) = run_sift(&mut features_image)?;
+
         Ok(Self{
             file_path: file_path.to_string(),
             file_name: file_name.to_string(),
+            image,
             width:0, height:0,
             keypoints: keypoints.into_iter().map(|pt| pt.map(Into::into)).collect(),
             descriptors: descriptors,

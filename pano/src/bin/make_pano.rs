@@ -12,7 +12,6 @@ mod extract_features;
 use crate::extract_features::{PanoImage};
 
 mod read_image;
-use crate::read_image::read_image_full_quality;
 
 extern crate rayon;
 use rayon::prelude::*;
@@ -20,6 +19,7 @@ use rayon::prelude::*;
 
 /* This can be set to f32 or f64 (theres no performance difference and f32 works worse) */
 type FloatType = f64;
+
 
 
 
@@ -39,12 +39,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>>
     let start_align = time::now();
     let mut image_set = PanoramaImageSet::new();
     let mut image_names = vec![];
-    images.into_iter().for_each(|image| {
-        image_set.add_image(image.keypoints, image.descriptors);
-        image_names.push((image.file_name, image.file_path))
+    images.iter().for_each(|image| {
+        image_set.add_image(image.keypoints.clone(), image.descriptors.clone());
+        image_names.push((image.file_name.clone(), image.file_path.clone()))
     });
     image_set.connect_initial_pairs(0);
-    println!("{} image pairs were matched and aligned in {:.1?} seconds", image_set.get_num_images(), (time::now().duration_since(start_align)?.as_micros()) as f64 / 1000000.0);
+    // image_set.
+    println!("{} images were matched and aligned in {:.1?} seconds", image_set.get_num_images(), (time::now().duration_since(start_align)?.as_micros()) as f64 / 1000000.0);
 
 
 
@@ -81,8 +82,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>>
 
         println!("\nReading images in full quality...");
         let start_read = time::now();
-        let mut images_full_quality: Vec<_> = image_names.par_iter()
-            .map(|i| read_image_full_quality(i.1.as_str()).ok())
+        let mut images_full_quality: Vec<_> = images.into_par_iter()
+            .map(|im| im.image.get_full_quality().ok())
             .collect();
         println!("Images read in {:.1?} seconds", (time::now().duration_since(start_read)?.as_micros()) as f64 / 1000000.0);
 

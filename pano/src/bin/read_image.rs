@@ -10,6 +10,7 @@ use rawloader;
 use std::error::Error;
 use rayon::prelude::*;
 
+#[derive(Debug)]
 pub enum SourceImage {
     /* Just a normal 8-bit file such as JPEG/PNG/TIFF */
     Image(cv::core::Mat),
@@ -147,11 +148,13 @@ impl SourceImage {
                 }
             }
             Self::Image(cv_image) => {
+                /* Use a lookup table to speed up 8-bit sRGB to float conversion */
+                let mut srgb_to_lin: [f32; 256] = core::array::from_fn(|x| decode_sRGB(x as f32 / 255.0));
                 let mut as_f32: Vec<_> = (0..cv_image.rows())
                     .flat_map(|i|
                         unsafe{std::slice::from_raw_parts(cv_image.row(i).unwrap().data() as *const u8, (cv_image.cols() * 3) as usize)}
                         .iter()
-                        .map(|x| decode_sRGB8(*x))
+                        .map(|x| srgb_to_lin[*x as usize])
                     ).collect();
                 Ok(ImageBuffer::new_with_data(cv_image.cols() as usize, cv_image.rows() as usize, as_f32))
             }
@@ -159,7 +162,3 @@ impl SourceImage {
     }
 }
 
-/* TODO */
-pub fn read_image_full_quality(file_path: &str) -> Result<ImageBuffer<3,f32>, Box<dyn Error>> {
-    SourceImage::new(file_path)?.get_full_quality()
-}
