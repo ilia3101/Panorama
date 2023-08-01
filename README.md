@@ -4,6 +4,33 @@ Automatic feature-based panorama stitching implemented in Rust, focused on accur
 
 OpenCV is used for its implementation of the SIFT feature detector/descriptor.
 
+## Examples
+
+### #1
+
+360 degrees, 9 images, Samyang 12mm fisheye, 5DIII raw
+
+Equirectangular (360) projection:
+
+![portsmouth_360 copy](https://github.com/ilia3101/Panorama/assets/23642861/0921f505-09a5-41ff-a721-598e97669f11)
+
+Stereographic projection:
+
+<img src="https://github.com/ilia3101/Panorama/assets/23642861/65695597-690a-445b-9b05-f80c40db8dba" width="50%"/><img src="https://github.com/ilia3101/Panorama/assets/23642861/1bafeb1a-06fb-4901-8f4b-64497ab14560" width="50%"/>
+
+### #2
+
+8 images, iPhone 11 night mode jpegs
+
+![spinakernight2 copy](https://github.com/ilia3101/Panorama/assets/23642861/b4441886-2b4e-41df-a19f-5740ff3edf16)
+
+### #3
+
+23 images, sony RX1 raw
+
+![prague](https://github.com/ilia3101/Panorama/assets/23642861/e988c9d9-5395-425b-a3e4-4fa5a76ba4ff)
+
+
 ## Running
 
 ```
@@ -53,31 +80,3 @@ Implementing all of this with Rust's trait system was really fun!!!
 - Use the Levenberg-Marquardt algorithm for optimisation, only a small change is needed to the current Gauss-Newton implementation (which has worked surprisingly well).
 - Include a lens center shift/offset parameter.
 - Refactor some things.
-
-
-## Examples
-
-### #1
-
-360 degrees, 9 images, Samyang 12mm fisheye, 5DIII raw
-
-Equirectangular (360) projection:
-
-![portsmouth_360 copy](https://github.com/ilia3101/Panorama/assets/23642861/0921f505-09a5-41ff-a721-598e97669f11)
-
-Stereographic projection:
-
-<img src="https://github.com/ilia3101/Panorama/assets/23642861/65695597-690a-445b-9b05-f80c40db8dba" width="50%"/><img src="https://github.com/ilia3101/Panorama/assets/23642861/1bafeb1a-06fb-4901-8f4b-64497ab14560" width="50%"/>
-
-### #2
-
-8 images, iPhone 11 night mode jpegs
-
-![spinakernight2 copy](https://github.com/ilia3101/Panorama/assets/23642861/b4441886-2b4e-41df-a19f-5740ff3edf16)
-
-### #3
-
-23 images, sony RX1 raw
-
-![prague](https://github.com/ilia3101/Panorama/assets/23642861/e988c9d9-5395-425b-a3e4-4fa5a76ba4ff)
-
