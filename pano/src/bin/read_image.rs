@@ -149,7 +149,7 @@ impl SourceImage {
             }
             Self::Image(cv_image) => {
                 /* Use a lookup table to speed up 8-bit sRGB to float conversion */
-                let mut srgb_to_lin: [f32; 256] = core::array::from_fn(|x| decode_sRGB(x as f32 / 255.0));
+                let srgb_to_lin: [f32; 256] = core::array::from_fn(|x| decode_sRGB(x as f32 / 255.0));
                 let mut as_f32: Vec<_> = (0..cv_image.rows())
                     .flat_map(|i|
                         unsafe{std::slice::from_raw_parts(cv_image.row(i).unwrap().data() as *const u8, (cv_image.cols() * 3) as usize)}

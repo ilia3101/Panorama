@@ -1,6 +1,7 @@
 //cargo build --release --bin make_pano --timings
 use opencv::{prelude::*, self as cv};
 use std::time::{SystemTime as time};
+use std::error::Error;
 
 use optimisation::functor::Functor;
 use maths::{linear_algebra::{Matrix3x3}, traits::{Float}};
@@ -8,10 +9,8 @@ use maths::{linear_algebra::{Matrix3x3}, traits::{Float}};
 use pano::{render::render::*, panorama, alignment::camera::Camera, alignment::camera::PTLens, panorama::*, utils::*};
 use image::imagebuffer::ImageBuffer;
 
-mod extract_features;
-use crate::extract_features::{PanoImage};
-
 mod read_image;
+use read_image::SourceImage;
 
 extern crate rayon;
 use rayon::prelude::*;
@@ -23,7 +22,60 @@ type FloatType = f64;
 
 
 
-fn main() -> Result<(), Box<dyn std::error::Error>>
+
+/************************************ pano image struct *********************************/
+
+use pano::features::SIFTDescriptor;
+use maths::linear_algebra::Point2D;
+
+#[derive(Debug)]
+pub struct PanoImage<T,D> {
+    pub file_path: String,
+    pub file_name: String,
+    pub image: SourceImage,
+    pub width: usize,
+    pub height: usize,
+    pub keypoints: Vec<Point2D<T>>,
+    pub descriptors: Vec<D>,
+}
+
+impl<T:From<f32>> PanoImage<T, SIFTDescriptor>
+{
+    /* Runs sift and maps coordinates in to +-0.5 range */
+    fn run_sift(image: &mut ImageBuffer<1,u8>) -> Result<(Vec<Point2D<f32>>, Vec<SIFTDescriptor>), Box<dyn Error>> {
+        let (pt, desc) = SIFTDescriptor::detect_and_compute(image)?;
+        Ok((/* Map feature coordinates in to a -0.5,+0.5 range */
+            pt.into_iter().map(|p|{
+                let p = p - Point2D(image.width as f32, image.height as f32) / 2.0;
+                p / image.width.max(image.height) as f32
+            }).collect(),
+            desc
+        ))
+    }
+
+    pub fn new(file_path: &str) -> Result<Self, Box<dyn Error>> {
+        let image = SourceImage::new(file_path)?;
+        let file_name = std::path::Path::new(file_path).file_name().ok_or("File path error.")?.to_str().ok_or("OsStr to str error")?;
+
+        let mut features_image = image.get_features_image()?;
+        let (keypoints, descriptors) = Self::run_sift(&mut features_image)?;
+
+        Ok(Self{
+            file_path: file_path.to_string(),
+            file_name: file_name.to_string(),
+            image, width:0, height:0,
+            keypoints: keypoints.into_iter().map(|pt| pt.map(Into::into)).collect(),
+            descriptors: descriptors,
+        })
+    }
+}
+
+
+
+
+/************************************ Main function ************************************/
+
+fn main() -> Result<(), Box<dyn Error>>
 {
     /* Load images and detect features (this happens in PanoImage::new) */
     let start = time::now();
@@ -44,7 +96,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>>
         image_names.push((image.file_name.clone(), image.file_path.clone()))
     });
     image_set.connect_initial_pairs(0);
-    // image_set.
     println!("{} images were matched and aligned in {:.1?} seconds", image_set.get_num_images(), (time::now().duration_since(start_align)?.as_micros()) as f64 / 1000000.0);
 
 

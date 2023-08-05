@@ -94,17 +94,29 @@ impl<const NCHANNELS: usize> ImageBuffer<NCHANNELS, f32>
     /* Function for aampling in a -0.5,+0.5 coordinate systsem */
     #[inline]
     pub fn sample_normalised(&self, x: f32, y: f32) -> Option<[f32; NCHANNELS]> {
-        let x = (x + 0.5) * self.width as f32;
-        let y = (y * self.width as f32) + self.height as f32 * 0.5;
-        self.sample(x, y)
+        if self.width > self.height {
+            let x = (x + 0.5) * self.width as f32;
+            let y = (y * self.width as f32) + self.height as f32 * 0.5;
+            self.sample(x, y)
+        } else {
+            let x = (x * self.height as f32) + self.width as f32 * 0.5;
+            let y = (y + 0.5) * self.height as f32;
+            self.sample(x, y)
+        }
     }
 
     /* Calcualtes a weight for simple panorama blending. TODO: move this somewhere else */
     #[inline]
     pub fn weight_normalised(&self, x: f32, y: f32) -> f32 {
-        let x = (x + 0.5) * self.width as f32;
-        let y = (y * self.width as f32) + self.height as f32 * 0.5;
-        self.weight(x, y)
+        if self.width > self.height {
+            let x = (x + 0.5) * self.width as f32;
+            let y = (y * self.width as f32) + self.height as f32 * 0.5;
+            self.weight(x, y)
+        } else {
+            let x = (x * self.height as f32) + self.width as f32 * 0.5;
+            let y = (y + 0.5) * self.height as f32;
+            self.weight(x, y)
+        }
     }
 
     #[inline]
