@@ -45,7 +45,7 @@ impl SIFTDescriptor
         let mut cv_descriptors = cv::core::Mat::default();
 
         /* Run SIFT */
-        let mut sift = <dyn cv::features2d::SIFT>::create_1(MAX_KEYPOINTS, 3, CONTRAST_THRESHOLD, EDGE_THRESHOLD, 1.6, cv::core::CV_8U)?;
+        let mut sift = cv::features2d::SIFT::create_1(MAX_KEYPOINTS, 3, CONTRAST_THRESHOLD, EDGE_THRESHOLD, 1.6, cv::core::CV_8U, false)?;
         sift.detect_and_compute(&img, &mask, &mut cv_keypoints, &mut cv_descriptors, false)?;
 
         /* Result vectors */
@@ -158,7 +158,7 @@ impl Features for OpenCVSIFTFeatures {
         let (mut cv_keypoints, mut cv_descriptors, mask) = (cv::core::Vector::default(), cv::core::Mat::default(), cv::core::Mat::default());
 
         /* Run SIFT */
-        let mut sift = <dyn cv::features2d::SIFT>::create_1(MAX_KEYPOINTS, 3, CONTRAST_THRESHOLD, EDGE_THRESHOLD, 1.6, cv::core::CV_8U).ok()?;
+        let mut sift = cv::features2d::SIFT::create_1(MAX_KEYPOINTS, 3, CONTRAST_THRESHOLD, EDGE_THRESHOLD, 1.6, cv::core::CV_8U, false).ok()?;
         sift.detect_and_compute(&img, &mask, &mut cv_keypoints, &mut cv_descriptors, false).ok()?;
         let num_features = cv_descriptors.rows();
 
