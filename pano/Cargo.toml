@@ -11,7 +11,7 @@ maths = { path = "../maths" }
 optimisation = { path = "../optimisation" }
 image = { path = "../image" }
 rawloader = "0.37.1"
-opencv = "0.77"
+opencv = "0.84.5"
 rayon = "*"
 
 
