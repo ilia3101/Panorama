@@ -40,7 +40,7 @@ impl<T,C> ImagePair<T,C> {
     }
 }
 
-impl<T,C> CalculateResiduals<T,2> for ImagePair<T,C>
+impl<T,C> CalculateResiduals<T,4> for ImagePair<T,C>
 where
     T: Float,
     C: Camera<T>
@@ -57,19 +57,14 @@ where
         (rotation, rotation.invert3x3())
     }
 
-    /* Reprojects feature coordinates, returns xy residuals through both cameras */
+    /* Reprojects feature coordinates, returns xy reprojection residuals of both cameras */
     #[inline]
-    fn run(&self, ctx: &Self::Context, input: Match<T>) -> [T; 2] {
+    fn run(&self, ctx: &Self::Context, input: Match<T>) -> [T; 4] {
         let (p_cam0, p_cam1) = (input.0, input.1);
         let cam0_to_cam1 = self.image1.camera.project_to_film(ctx.0 * self.image0.camera.project_from_film(p_cam0));
         let cam1_to_cam0 = self.image0.camera.project_to_film(ctx.1 * self.image1.camera.project_from_film(p_cam1));
-        let (d0, d1) = (cam1_to_cam0.distance(p_cam0), cam0_to_cam1.distance(p_cam1));
-        [d0,d1]
-        /* TODO: When the distances are zero, there is a numerical gradient issue because of the square root operation.
-         * Solve this somehow, maybe by returning the raw x and y residuals from just
-         * one of the images instead. */
-        // let (d0, d1) = (cam1_to_cam0 - p_cam0, cam0_to_cam1 - p_cam1);
-        // [d0[0], d0[1], d1[0], d1[1]]
+        let (d0, d1) = (cam1_to_cam0 - p_cam0, cam0_to_cam1 - p_cam1);
+        [d0[0], d0[1], d1[0], d1[1]]
     }
 }
 
