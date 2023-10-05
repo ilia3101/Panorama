@@ -8,7 +8,7 @@ OpenCV is used for its implementation of the SIFT feature detector/descriptor.
 
 ### #1
 
-360 degrees, 9 images, Samyang 12mm fisheye, 5DIII raw
+360 degrees, 9 images, Samyang 12mm fisheye
 
 Equirectangular (360) projection:
 
@@ -20,15 +20,16 @@ Stereographic projection:
 
 ### #2
 
-8 images, iPhone 11 night mode jpegs
+8 images, iPhone 11 night mode
 
 ![spinakernight2 copy](https://github.com/ilia3101/Panorama/assets/23642861/b4441886-2b4e-41df-a19f-5740ff3edf16)
 
 ### #3
 
-23 images, sony RX1 raw
+26 images, Sony RX1 (35mm)
 
-![prague](https://github.com/ilia3101/Panorama/assets/23642861/e988c9d9-5395-425b-a3e4-4fa5a76ba4ff)
+![prague](https://github.com/ilia3101/Panorama/assets/23642861/9660feeb-d399-4f37-b4c2-26e07684bc9a)
+
 
 
 ## Running
