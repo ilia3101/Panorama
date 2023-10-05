@@ -45,7 +45,7 @@ It requires Rust/Cargo and OpenCV to be installed on your computer, the Homebrew
 
 Firstly, images are aligned in pairs, using RANSAC to exclude false feature matches. Secondly, the panorama is built up by adding images one by one, performing bundle adjustment optimisation at each step to improve accuracy.
 
-A [generalised fisheye model](https://link.springer.com/article/10.1007/s11263-006-5168-1) with one parameter is utilised to compensate for radial distortion and fisheye projections during the RANSAC stage. Although the generalised fisheye model was intended only to model ideal rectilinear and fisheye lenses, I found that increasing the linearity (L) parameter above 1.0 approximates pincushion distortion. An additional three-parameter polynomial distortion pass is added on top of that to further improve accuracy when optimising the entire panorama.
+A [generalised fisheye model](https://link.springer.com/article/10.1007/s11263-006-5168-1) with one parameter is utilised to compensate for radial distortion and fisheye projections during the RANSAC stage. Although the generalised fisheye model was intended only to model ideal rectilinear and fisheye lenses, I found that increasing the linearity (L) parameter above 1.0 approximates pincushion distortion. An additional three-parameter polynomial distortion model is layered on top of that to further improve accuracy when optimising the entire panorama.
 
 ## Technical details
 
