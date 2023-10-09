@@ -33,9 +33,9 @@ impl SIFTDescriptor
         let img = make_cv_image(image.width, image.height, &image.data);
 
         /* SIFT parameters */
-        const CONTRAST_THRESHOLD: f64 = 0.04; /* 0.04 is default */
+        const CONTRAST_THRESHOLD: f64 = 0.03; /* 0.04 is opencv default, 0.09 is equivalent to the original paper */
         const EDGE_THRESHOLD: f64 = 10.;
-        const MAX_KEYPOINTS: i32 = 2750; /* Set this to 0 for no limit */
+        const MAX_KEYPOINTS: i32 = 1500; /* Set this to 0 for no limit */
 
         /* Does nothing */
         let mask = cv::core::Mat::default();
@@ -69,7 +69,6 @@ impl SIFTDescriptor
     }
 }
 
-use core::num::Wrapping;
 
 impl Descriptor for SIFTDescriptor {
     #[inline]

@@ -1,8 +1,13 @@
 [workspace]
 
+resolver = "2"
+
 members = [
     "maths",
     "optimisation",
     "pano",
     "image",
 ]
+
+[profile.release]
+panic = "abort"

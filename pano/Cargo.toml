@@ -21,4 +21,5 @@ name = "pano"
 crate-type = ["staticlib","lib"]
 
 # [profile.release]
-# lto = "thin" # "fat" does even more LTO but takes SO LONG
+# # lto = "thin" # "fat" does even more LTO but takes SO LONG
+# panic = "abort"

@@ -116,7 +116,6 @@ impl<T: Float + Send + Sync> PairAlignment<T>
         //     );
         // }
 
-        // THIS IS BAD !! ! ALLOWING DISTORTION CAUSES OVERFITTING !!!!!!!!!! ONLY USE FISHEYE FACTOR !!!!!
         /* Lock fisheye parameter and unlock the distortion parameters (optimising both at once causes issues) */
         // alignment.image0.camera.linearity.lock();
         // alignment.image1.camera.linearity.lock();
@@ -161,7 +160,6 @@ impl<T: Float + Send + Sync> PanoramaAlignment<T>
     pub fn bundle_adjust(&mut self, n_iterations: usize, learning_rate: T) -> Result<(),()>
     {
         // self.images.iter().for_each(|im| if let Some(im)=im {println!("{:#?}\n{:?}", im.camera, im.rotation_xyz)});
-
         let mut param_id_vecs = vec![];
         let mut is_first = true;
         let mut as_params: Vec<Option<Image<Parameter<T>,CameraModel<Parameter<T>>>>> = self.images.iter().map(|im| {
