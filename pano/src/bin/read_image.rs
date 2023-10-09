@@ -18,8 +18,9 @@ pub enum SourceImage {
     RawFile(rawloader::RawImage),
 }
 
+#[allow(non_snake_case)]
+#[inline(always)]
 fn decode_sRGB(u: f32) -> f32 { if u < 0.04045 {u*(25.0/323.0)} else {((u+0.055)/1.055).powf(2.4)} }
-fn decode_sRGB8(u: u8) -> f32 { decode_sRGB(u as f32 / 255.0) }
 
 impl SourceImage {
     pub fn new(file_path: &str) -> Result<Self, Box<dyn Error>> {
@@ -70,9 +71,9 @@ impl SourceImage {
                         drop(blurred2);
 
                         /* Divide the image by the blur image to normalise exposure for better feature detection */
-                        let mut normalised: Vec<_> = downscaled.into_par_iter().zip(blurred.into_par_iter())
+                        let normalised: Vec<_> = downscaled.into_par_iter().zip(blurred.into_par_iter())
                             .map(|(x, x_blurred)| {
-                                let normalised = (x as f32 / x_blurred as f32);
+                                let normalised = x as f32 / x_blurred as f32;
                                 (normalised / (normalised + 1.0) * 255.0).clamp(0.0,255.0) as u8
                             }).collect();
 
@@ -103,7 +104,7 @@ impl SourceImage {
                 // println!("Downscale = {feature_downscale_factor}");
                 // cv::imgcodecs::imwrite("FEARTURES IMAGE.png", &downscaled_cv, &cv::core::Vector::default())?;
 
-                let mut data_u8: Vec<_> = (0..downscaled_cv.rows())
+                let data_u8: Vec<_> = (0..downscaled_cv.rows())
                     .flat_map(|i|
                         unsafe{std::slice::from_raw_parts(downscaled_cv.row(i).unwrap().data() as *const u8, downscaled_cv.cols() as usize)}
                         .iter()
@@ -133,7 +134,7 @@ impl SourceImage {
                         let mut dcv = cv::core::Mat::default();
                         opencv::imgproc::demosaicing(&raw_image, &mut dcv, opencv::imgproc::COLOR_BayerBG2BGR, 3)?;
 
-                        let mut as_f32: Vec<_> = (0..dcv.rows())
+                        let as_f32: Vec<_> = (0..dcv.rows())
                             .flat_map(|i|
                                 unsafe{std::slice::from_raw_parts(dcv.row(i).unwrap().data() as *const u16, (dcv.cols() * 3) as usize)}
                                 .iter()
@@ -150,7 +151,7 @@ impl SourceImage {
             Self::Image(cv_image) => {
                 /* Use a lookup table to speed up 8-bit sRGB to float conversion */
                 let srgb_to_lin: [f32; 256] = core::array::from_fn(|x| decode_sRGB(x as f32 / 255.0));
-                let mut as_f32: Vec<_> = (0..cv_image.rows())
+                let as_f32: Vec<_> = (0..cv_image.rows())
                     .flat_map(|i|
                         unsafe{std::slice::from_raw_parts(cv_image.row(i).unwrap().data() as *const u8, (cv_image.cols() * 3) as usize)}
                         .iter()

@@ -1,6 +1,6 @@
 use maths::{
     linear_algebra::{Point2D, Point3D, Vector3D},
-    traits::{Float,One,Zero},
+    traits::{Float,One},
 };
 use optimisation::{functor::*,};
 
@@ -40,8 +40,7 @@ pub struct GeneralCamera<T, D> {
 }
 
 /* Gennery (2006) mapping functions */
-impl <T:Float, D> GeneralCamera<T,D>
-{
+impl <T:Float, D> GeneralCamera<T,D> {
     #[inline]
     fn theta_to_radius(&self, t: T) -> T {
         if self.linearity > T::zero() {
@@ -79,10 +78,36 @@ impl<T, D> From<PinholeCamera<T>> for GeneralCamera<T,D>
     }
 }
 
+
+// /* Returns maximum angle for L value, with infinity at zero,
+//  * collapsing down at both sides */
+// #[inline]
+// fn max_theta_for_linearity<T:Float>(linearity: T) -> T {
+//     if linearity.is_zero() {
+//         T::int(10000000)
+//     } else {
+//         T::frac(314159,100000) / (T::int(2) * linearity.abs())
+//     }
+// }
+
+// /* Returns maximum allowable radius, always representing an angle pi or less.
+//  * (Usually less, it is pi/2 for rectilinear for exampel) */
+// #[inline]
+// fn max_radius_for_linearity<T:Float>(L: f64) -> f64 {
+//     if L < 0.0 {
+//         T::frac(-314159,100000) / (T::int(2) * L)
+//     } else {
+//         f64::INFINITY
+//     }
+// }
+
 impl<T:Float, D:RadialDistortion<T>> Camera<T> for GeneralCamera<T,D>
 {
     #[inline]
     fn project_to_film(&self, point: Point3D<T>) -> Point2D<T> {
+        // if point.z() < T::zero() {
+        //     return Point2D(T::zero(), T::zero());
+        // }
         /* Project */
         let point_xy = Point2D(point.x(), point.y());
         let len = point_xy.magnitude();
@@ -140,10 +165,6 @@ impl<A, D:Functor<A>> Functor<A> for GeneralCamera<A,D> {
 
 pub trait RadialDistortion<T>
 {
-    fn distort_point(&self, p: Point2D<T>) -> Point2D<T> {
-        todo!();
-    }
-
     /* Apply distortion */
     fn distort(&self, x: T) -> T;
 
@@ -173,10 +194,16 @@ pub trait RadialDistortion<T>
 /************************************* No distortion *************************************/
 /*****************************************************************************************/
 
-/* No distortion */
-impl<T> RadialDistortion<T> for () {
-    #[inline] fn distort(&self, x: T) -> T { x }
-    #[inline] fn undistort(&self, x: T) -> T { x }
+#[derive(Clone, Copy, Debug, Default)]
+pub struct NoDistortion<T> (core::marker::PhantomData<T>); 
+impl<T> NoDistortion<T> { #[inline(always)] fn new() -> Self { Self(core::marker::PhantomData) } }
+impl<T> RadialDistortion<T> for NoDistortion<T> {
+    #[inline(always)] fn distort(&self, x: T) -> T { x }
+    #[inline(always)] fn undistort(&self, x: T) -> T { x }
+}
+impl<A> Functor<A> for NoDistortion<A> {
+    type Wrapped<B> = NoDistortion<B>;
+    #[inline(always)] fn fmap<F, B>(self, mut _f: F) -> NoDistortion<B> where F: FnMut(A) -> B { NoDistortion::<B>::new() }
 }
 
 /*****************************************************************************************/

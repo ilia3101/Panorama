@@ -73,11 +73,11 @@ pub struct Parameter<T> {
 }
 
 /* All parameters have a unique ID (this is a atomic global variable yeah) */
-static _param_id: AtomicU64 = AtomicU64::new(0);
+static PARAM_ID: AtomicU64 = AtomicU64::new(0);
 
 impl<T> Parameter<T> {
     /* Constructors */
-    #[inline] pub fn new(value: T, locked: bool) -> Self { Self { id: _param_id.fetch_add(1, SeqCst), locked, value } }
+    #[inline] pub fn new(value: T, locked: bool) -> Self { Self { id: PARAM_ID.fetch_add(1, SeqCst), locked, value } }
     #[inline] pub fn locked(value: T) -> Self { Self::new(value, true) }
     #[inline] pub fn unlocked(value: T) -> Self { Self::new(value, false) }
 
@@ -134,7 +134,7 @@ impl<T: Float> GeneralParameter<T> for T {
     #[inline] fn get_id(&self) -> Option<u64> { None }
     #[inline] fn is_locked(&self) -> bool { false }
     #[inline] fn get_value(&self) -> T { *self }
-    #[inline] fn set_value(&mut self, value: T) { std::mem::replace(self, value); }
+    #[inline] fn set_value(&mut self, value: T) { let _ = std::mem::replace(self, value); }
     #[inline] fn set_locked(&mut self, _locked: bool) { unimplemented!("Can't lock a T") }
 }
 

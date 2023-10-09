@@ -6,20 +6,20 @@ use maths::linear_algebra::{Vector3D, Point2D, Matrix3x3};
 use rayon::prelude::*;
 
 
-pub struct PanoRenderer<const NCHANNELS: usize, CAMERA> {
+pub struct PanoRenderer<const N_CHANNELS: usize, CAMERA> {
     pub images: Vec<Image<f32, CAMERA>>,
-    pub image_data: Vec<ImageBuffer<NCHANNELS,f32>>,
+    pub image_data: Vec<ImageBuffer<N_CHANNELS,f32>>,
     pub orientation: Matrix3x3<f32>,
 }
 
-impl<const NCHANNELS: usize, CAMERA: Camera<f32> + Sync> PanoRenderer<NCHANNELS, CAMERA>
+impl<const N_CHANNELS: usize, CAMERA: Camera<f32> + Sync> PanoRenderer<N_CHANNELS, CAMERA>
 {
-    pub fn render_pano<VIEW_CAMERA: Camera<f32> + Sync>(
+    pub fn render_pano(
         &self,
-        view: VIEW_CAMERA,
+        view: impl Camera<f32> + Sync,
         width: usize,
         height: usize
-    ) -> ImageBuffer<NCHANNELS,f32>
+    ) -> ImageBuffer<N_CHANNELS,f32>
     {
         let image_orientations: Vec<_> = self.images.iter().map(|image| {
             image.get_rotation_matrix() * self.orientation.invert3x3()
@@ -39,7 +39,7 @@ impl<const NCHANNELS: usize, CAMERA: Camera<f32> + Sync> PanoRenderer<NCHANNELS,
 
         let row_iter = (0..height)
             .map(|y| (y as f32 - height as f32 / 2.0) / width as f32)
-            .zip(result.data.chunks_exact_mut(width * NCHANNELS))
+            .zip(result.data.chunks_exact_mut(width * N_CHANNELS))
             .zip(weights.data.chunks_exact_mut(width))
             .par_bridge(); // Parallel
 
@@ -51,7 +51,7 @@ impl<const NCHANNELS: usize, CAMERA: Camera<f32> + Sync> PanoRenderer<NCHANNELS,
                 let limit = image_limits[i];
                 let iter_pixels = (0..width)
                     .map(|x| (x as f32 / width as f32) - 0.5)
-                    .zip(row.chunks_exact_mut(NCHANNELS))
+                    .zip(row.chunks_exact_mut(N_CHANNELS))
                     .zip(row_weights.iter_mut());
                 iter_pixels.for_each(|((x, pix), sum_weight)| {
                     let view_vec = view.project_from_film(Point2D(x,y));
@@ -61,8 +61,8 @@ impl<const NCHANNELS: usize, CAMERA: Camera<f32> + Sync> PanoRenderer<NCHANNELS,
                         if let Some(value) = imagedata.sample_normalised(im_coord.x(),im_coord.y()) {
                             let weight = imagedata.weight_normalised(im_coord.x(),im_coord.y());
                             *sum_weight += weight;
-                            for i in 0..NCHANNELS { pix[i] += value[i] * weight; }
-                            // for i in 0..NCHANNELS { pix[i] = value[i]; }
+                            for i in 0..N_CHANNELS { pix[i] += value[i] * weight; }
+                            // for i in 0..N_CHANNELS { pix[i] = value[i]; }
                         }
                     }
                 });
@@ -70,11 +70,11 @@ impl<const NCHANNELS: usize, CAMERA: Camera<f32> + Sync> PanoRenderer<NCHANNELS,
         });
 
         /* Normalise the weights */
-        result.data.chunks_exact_mut(width * NCHANNELS)
+        result.data.chunks_exact_mut(width * N_CHANNELS)
             .zip(weights.data.chunks_exact_mut(width))
             .par_bridge()
             .for_each(|(row, row_weights)| {
-                let iter_pixels = row.chunks_exact_mut(NCHANNELS).zip(row_weights.iter_mut());
+                let iter_pixels = row.chunks_exact_mut(N_CHANNELS).zip(row_weights.iter_mut());
                 iter_pixels.for_each(|(pix, weight)| {
                     if *weight != 0.0 {
                         pix.iter_mut().for_each(|x| *x /= *weight);
@@ -86,7 +86,7 @@ impl<const NCHANNELS: usize, CAMERA: Camera<f32> + Sync> PanoRenderer<NCHANNELS,
     }
 
     /* Result width is double the height */
-    pub fn render_360(&self, height: usize) -> ImageBuffer<NCHANNELS,f32> {
+    pub fn render_360(&self, height: usize) -> ImageBuffer<N_CHANNELS,f32> {
         self.render_pano(EquirectangularCamera, height*2, height)
     }
 }

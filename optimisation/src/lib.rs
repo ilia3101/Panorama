@@ -5,12 +5,12 @@ pub mod parameters;
 
 use maths::traits::Float;
 use maths::dual_numbers::MultiDual;
-use maths::linear_algebra::{Vector, Matrix, MatrixNxN};
+use maths::linear_algebra::{Vector, Matrix};
 
 
+#[allow(non_snake_case)]
 pub fn least_squares<T, F, const N_PARAMS: usize, const N_RESIDUALS: usize>(
     n_iterations: usize,
-    learn_rate: T,
     starting_params: [T; N_PARAMS],
     mut calculate_residuals: F
 ) -> [T; N_PARAMS]
@@ -45,6 +45,7 @@ where
 
 
 /* TODO: improve this */
+// #[allow(non_snake_case)]
 // pub fn least_squares_function_fit<T, F, const N_PARAMS: usize, const N_IN: usize, const N_OUT: usize>(
 //     n_iterations: usize,
 //     learn_rate: T,

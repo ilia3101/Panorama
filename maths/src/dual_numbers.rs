@@ -8,7 +8,10 @@ use core::iter::{Sum};
 /* Generic dual type */
 #[derive(Clone,Copy,Debug,Default)]
 pub struct Dual<T,U> { pub x: T, pub dx: U }
-#[inline(always)] pub const fn Dual<T,U>(x: T, dx: U) -> Dual<T,U> { Dual{x, dx} }
+
+#[allow(non_snake_case)]
+#[inline(always)]
+pub const fn Dual<T,U>(x: T, dx: U) -> Dual<T,U> { Dual{x, dx} }
 
 /* Same thing as Ceres Jet (probably) */
 pub type MultiDual<T, const N: usize> = Dual<T,Vector<T,N>>;

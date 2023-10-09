@@ -40,11 +40,19 @@ impl<T> Matrix3x3<T> {
 
     #[inline]
     pub fn rotation_euler(x: T, y: T, z: T) -> Self where T: Float {
-        let (cosX, cosY, cosZ) = (x.cos(), y.cos(), z.cos());
-        let (sinX, sinY, sinZ) = (x.sin(), y.sin(), z.sin());
-        Self ([[                cosY*cosZ,                -cosY*sinZ,       sinY],
-               [ sinX*sinY*cosZ+cosX*sinZ, -sinX*sinY*sinZ+cosX*cosZ, -sinX*cosY],
-               [-cosX*sinY*cosZ+sinX*sinZ,  cosX*sinY*sinZ+sinX*cosZ,  cosX*cosY]])
+        let (cosx, cosy, cosz) = (x.cos(), y.cos(), z.cos());
+        let (sinx, siny, sinz) = (x.sin(), y.sin(), z.sin());
+        Self ([[                cosy*cosz,                -cosy*sinz,       siny],
+               [ sinx*siny*cosz+cosx*sinz, -sinx*siny*sinz+cosx*cosz, -sinx*cosy],
+               [-cosx*siny*cosz+sinx*sinz,  cosx*siny*sinz+sinx*cosz,  cosx*cosy]])
+    }
+
+    /* Applies euler rotation twice to place singularities (gimlal locks)
+     * further away from the identity, don't know if its any use */
+    #[inline]
+    pub fn rotation_double_euler(x: T, y: T, z: T) -> Self where T: Float {
+        let mat = Self::rotation_euler(x,y,z);
+        mat * mat
     }
 
     #[inline]
@@ -205,9 +213,8 @@ impl <T, const N: usize> MatrixNxN<T,N> {
             for row in 0..row_from {
                 let m = lhs[row][row_from] / lhs[row_from][row_from];
                 for c in 0..N {
-                    /* Is the LHS part necessary to evaluate?? */
                     rhs[row][c] = rhs[row][c] - rhs[row_from][c] * m;
-                    lhs[row][c] = lhs[row][c] - lhs[row_from][c] * m;
+                    // lhs[row][c] = lhs[row][c] - lhs[row_from][c] * m; /* Is the LHS part necessary to evaluate?? */
                 }
             }
         }
@@ -294,9 +301,13 @@ pub type Vector3D<T> = Vector<T, 3>;
 pub type Point2D<T> = Vector2D<T>;
 pub type Point3D<T> = Vector3D<T>;
 
+#[allow(non_snake_case)]
 #[inline] pub fn Vector2D<T>(x:T, y:T) -> Vector2D<T> {Vector([x,y])}
+#[allow(non_snake_case)]
 #[inline] pub fn Vector3D<T>(x:T, y:T, z:T) -> Vector3D<T> {Vector([x,y,z])}
+#[allow(non_snake_case)]
 #[inline] pub fn Point2D<T>(x:T, y:T) -> Vector2D<T> {Vector2D(x,y)}
+#[allow(non_snake_case)]
 #[inline] pub fn Point3D<T>(x:T, y:T, z:T) -> Vector3D<T> {Vector3D(x,y,z)}
 
 impl <T, const N: usize> IntoIterator for Vector<T, N> {

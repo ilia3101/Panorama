@@ -1,5 +1,5 @@
 use maths::{
-    linear_algebra::{Matrix3x3, Vector2D, Vector},
+    linear_algebra::{Matrix3x3},
     traits::{Float},
 };
 

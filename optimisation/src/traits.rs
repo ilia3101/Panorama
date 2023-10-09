@@ -11,7 +11,7 @@ use maths::traits::Float;
  * done in the 'prepare' function, the output of which will
  * be passed to 'run' every time the function is run
  */
-pub trait CalculateResiduals<T, const NResiduals: usize>
+pub trait CalculateResiduals<T, const N_RESIDUALS: usize>
 {
     /* Input data type */
     type Input;
@@ -21,7 +21,7 @@ pub trait CalculateResiduals<T, const NResiduals: usize>
     fn prepare(&self) -> Self::Context;
 
     /* Run */
-    fn run(&self, ctx: &Self::Context, input: Self::Input) -> [T; NResiduals];
+    fn run(&self, ctx: &Self::Context, input: Self::Input) -> [T; N_RESIDUALS];
 
 
     /* TODO: Move these elsewhere */

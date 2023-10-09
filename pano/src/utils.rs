@@ -1,4 +1,4 @@
-use opencv::{prelude::*, self as cv,};
+use opencv as cv;
 
 /* Creates an opencv image that uses provided memory slice */
 pub fn make_cv_image_crop<T>(

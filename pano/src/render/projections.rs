@@ -1,4 +1,3 @@
-use maths::traits::Float;
 use maths::linear_algebra::{Point2D, Point3D};
 use super::super::alignment::camera::Camera;
 use core::f32::consts::TAU;

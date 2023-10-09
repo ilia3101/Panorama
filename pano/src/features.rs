@@ -89,17 +89,17 @@ impl Descriptor for SIFTDescriptor {
 
 use rayon::prelude::*;
 
-pub fn brute_force_match<T: Descriptor + Sync>(desc1: &Vec<T>, desc2: &Vec<T>, _Threshold: f32) -> Vec<(usize, usize)>
+pub fn brute_force_match<T: Descriptor + Sync>(desc1: &Vec<T>, desc2: &Vec<T>, _threshold: f32) -> Vec<(usize, usize)>
 {
     let matches: Vec<_> = (0..desc1.len()).into_par_iter().filter_map(|a| {
         /* Find best and second best match */
-        let (mut ind_2nd_best, mut ind_best) = (0, 0);
+        let (mut _ind_2nd_best, mut ind_best) = (0, 0);
         let (mut err_2nd_best, mut err_best) = (f32::MAX, f32::MAX);
 
         for i in 0..desc2.len() {
             let error = desc1[a].compare(&desc2[i]);
             if error < err_best {
-                (ind_2nd_best, ind_best) = (ind_best, i);
+                (_ind_2nd_best, ind_best) = (ind_best, i);
                 (err_2nd_best, err_best) = (err_best, error);
             }
         }
@@ -162,7 +162,7 @@ impl Features for OpenCVSIFTFeatures {
         let num_features = cv_descriptors.rows();
 
         /* Make sure more the descriptors output array has 128 columns */
-        if (cv_descriptors.cols() != 128) { return None; }
+        if cv_descriptors.cols() != 128 { return None; }
 
         /* Convert the data to rust data structures now */
         let mut keypoints = Vec::with_capacity(num_features as usize);

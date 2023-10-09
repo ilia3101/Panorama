@@ -16,45 +16,9 @@ impl<const NCHANNELS: usize, T> ImageBuffer<NCHANNELS, T>
     pub fn new_with_data(width: usize, height: usize, data: Vec<T>) -> Self {
         Self { width, height, data }
     }
-
-    #[inline]
-    fn row_index(&self, y: usize) -> usize {
-        y * self.width * NCHANNELS
-    }
-
-    #[inline]
-    fn row(&self, y: usize) -> &[T] {
-        let index = self.row_index(y);
-        &self.data[index..(index+self.width*NCHANNELS)]
-    }
-
-    // #[inline]
-    // pub fn row_iter_mut(&self) -> u32 {
-    //     self.data.chunks_exact_mut(self.width * NCHANNELS)
-    // }
 }
 
-/************************* Image Saving **************************/
-
-// use image;
-fn encode_sRGB(u: f32) -> f32 { if u < 0.0031308 {u*(323.0/25.0)} else {1.055 * u.powf(1.0/2.4) - 0.055} }
-fn encode_sRGB8(u: f32) -> u8 { (encode_sRGB(u) * 255.0) as u8 }
-impl ImageBuffer<3,f32> {
-    pub fn save(&self, out_file: &str) {
-        // let mut output = image::ImageBuffer::new(self.width as u32, self.height as u32);
-        // for y in 0..self.height {
-        //     let rowi = self.row_index(y);
-        //     for x in 0..self.width {
-        //         let idx = rowi + x*3;
-        //         *output.get_pixel_mut(x as u32, y as u32) = image::Rgb(
-        //             [self.data[idx+2], self.data[idx+1], self.data[idx+0]].map(encode_sRGB8)
-        //         );
-        //     }
-        // }
-        // output.save(out_file);
-    }
-}
-
+/* TODO: Image Saving (add a save method) */
 
 impl<const NCHANNELS: usize> ImageBuffer<NCHANNELS, f32>
 {

@@ -92,7 +92,7 @@ where
 pub fn ransac_refine<F1, F2, M, D>(
     previous_best_model: M, previous_best_inliers: usize,
     max_iterations: usize, min_iterations: usize,
-    N_data: usize, data_set: &[D],
+    n_data: usize, data_set: &[D],
     fit_model: F1, count_inliers: F2,
 ) -> (M, usize)
 where
@@ -102,7 +102,7 @@ where
     M: Send + Clone
 {
     let (best_model, best_inliers) = ransac(
-        max_iterations, min_iterations, Some(0.0), N_data, data_set, fit_model, count_inliers,
+        max_iterations, min_iterations, Some(0.0), n_data, data_set, fit_model, count_inliers,
         |_,inliers| inliers >= previous_best_inliers
     );
     match (best_model, best_inliers >= previous_best_inliers) {

@@ -1,12 +1,12 @@
 //cargo build --release --bin make_pano --timings
-use opencv::{prelude::*, self as cv};
-use std::time::{SystemTime as time};
+use opencv as cv;
+use std::time::{SystemTime as Time};
 use std::error::Error;
 
 use optimisation::functor::Functor;
 use maths::{linear_algebra::{Matrix3x3}, traits::{Float}};
 
-use pano::{render::render::*, panorama, alignment::camera::Camera, alignment::camera::PTLens, panorama::*, utils::*};
+use pano::{render::render::*, panorama::*, utils::*};
 use image::imagebuffer::ImageBuffer;
 
 mod read_image;
@@ -78,17 +78,17 @@ impl<T:From<f32>> PanoImage<T, SIFTDescriptor>
 fn main() -> Result<(), Box<dyn Error>>
 {
     /* Load images and detect features (this happens in PanoImage::new) */
-    let start = time::now();
+    let start = Time::now();
     let file_paths: Vec<_> = std::env::args().skip(1).collect();
     println!("Loading {} images...", file_paths.len());
     let images: Vec<_> = file_paths.par_iter().filter_map(|path| PanoImage::<FloatType,_>::new(path).ok()).collect();
-    println!("{} images were loaded in {:.1?} seconds", images.len(), (time::now().duration_since(start)?.as_micros()) as f64 / 1000000.0);
+    println!("{} images were loaded in {:.1?} seconds", images.len(), (Time::now().duration_since(start)?.as_micros()) as f64 / 1000000.0);
 
 
 
 
     println!("\nAligning initial pairs...");
-    let start_align = time::now();
+    let start_align = Time::now();
     let mut image_set = PanoramaImageSet::new();
     let mut image_names = vec![];
     images.iter().for_each(|image| {
@@ -96,14 +96,14 @@ fn main() -> Result<(), Box<dyn Error>>
         image_names.push((image.file_name.clone(), image.file_path.clone()))
     });
     image_set.connect_initial_pairs(0);
-    println!("{} images were matched and aligned in {:.1?} seconds", image_set.get_num_images(), (time::now().duration_since(start_align)?.as_micros()) as f64 / 1000000.0);
+    println!("{} images were matched and aligned in {:.1?} seconds", image_set.get_num_images(), (Time::now().duration_since(start_align)?.as_micros()) as f64 / 1000000.0);
 
 
 
     println!("\nBuilding panorama...");
-    let start_pano = time::now();
+    let start_pano = Time::now();
     let panorama = image_set.build_panorama();
-    println!("Panorama was built and refined in {:.1?} seconds", (time::now().duration_since(start_pano)?.as_micros()) as f64 / 1000000.0);
+    println!("Panorama was built and refined in {:.1?} seconds", (Time::now().duration_since(start_pano)?.as_micros()) as f64 / 1000000.0);
 
 
 
@@ -132,11 +132,11 @@ fn main() -> Result<(), Box<dyn Error>>
         }
 
         println!("\nReading images in full quality...");
-        let start_read = time::now();
+        let start_read = Time::now();
         let mut images_full_quality: Vec<_> = images.into_par_iter()
             .map(|im| im.image.get_full_quality().ok())
             .collect();
-        println!("Images read in {:.1?} seconds", (time::now().duration_since(start_read)?.as_micros()) as f64 / 1000000.0);
+        println!("Images read in {:.1?} seconds", (Time::now().duration_since(start_read)?.as_micros()) as f64 / 1000000.0);
 
 
         let mut renderer = PanoRenderer{
@@ -154,10 +154,10 @@ fn main() -> Result<(), Box<dyn Error>>
             }
         }
 
-        println!("\nTotal time {:.1?} seconds", (time::now().duration_since(start)?.as_micros()) as f64 / 1000000.0);
+        println!("\nTotal time {:.1?} seconds", (Time::now().duration_since(start)?.as_micros()) as f64 / 1000000.0);
 
         /* User loop */
-        let mut stdin = std::io::stdin();
+        let stdin = std::io::stdin();
         let mut input = String::new();
         /* Options */
         let mut is_360 = false;
@@ -171,12 +171,12 @@ fn main() -> Result<(), Box<dyn Error>>
         let win = "pano_window";
         cv::highgui::start_window_thread()?;
         cv::highgui::named_window(win, cv::highgui::WINDOW_NORMAL | cv::highgui::WINDOW_GUI_NORMAL)?;
-        cv::highgui::set_window_title(win, "Panorama");
+        cv::highgui::set_window_title(win, "Panorama")?;
 
         loop {
             println!("Enter command: ");
             input.clear();
-            stdin.read_line(&mut input);
+            stdin.read_line(&mut input)?;
 
             if input.starts_with("exit") {
                 break;
@@ -187,13 +187,13 @@ fn main() -> Result<(), Box<dyn Error>>
                 if let Ok(focal_length) = input.trim().parse::<f32>() {
                     camera.focal_length = focal_length / 36.0;
                 }
-            } else if let Some(input) = input.strip_prefix("rectilinear") {
+            } else if input.starts_with("rectilinear") {
                 camera.linearity = 1.0;
                 is_360 = false;
-            } else if let Some(input) = input.strip_prefix("stereographic") {
+            } else if input.starts_with("stereographic") {
                 camera.linearity = 0.5;
                 is_360 = false;
-            } else if let Some(input) = input.strip_prefix("fisheye") {
+            } else if input.starts_with("fisheye") {
                 camera.linearity = 0.0001;
                 is_360 = false;
             } else if let Some(input) = input.strip_prefix("exposure ") {
@@ -228,8 +228,10 @@ fn main() -> Result<(), Box<dyn Error>>
                 /* Save panorama */
                 println!("Writing to file: {}", file_name.trim());
                 let mut pano = render(&renderer, is_360, camera, aspect_ratio, resolution, exposure);
+                println!("Writing file...");
                 let cv_image = make_cv_image(pano.width, pano.height, &mut pano.data);
                 cv::imgcodecs::imwrite(file_name.trim(), &cv_image, &cv::types::VectorOfi32::new())?;
+                println!("Panorama saved!");
             } else if input.starts_with("view") {
                 /* Show panorama */
                 let mut pano = if is_360 {render(&renderer, is_360, camera, aspect_ratio, 3200, exposure)}
@@ -251,19 +253,21 @@ fn main() -> Result<(), Box<dyn Error>>
     Ok(())
 }
 
-fn render(renderer: &PanoRenderer<3,CameraModel<f32>>, is_360: bool, camera: CameraModel<f32>, aspect: f32, resolution: usize, exposure: f32) -> ImageBuffer<3,u8>
+fn render(renderer: &PanoRenderer<3,CameraModel<f32>>, is_360: bool, camera: CameraModel<f32>, aspect: f32, resolution: usize, _exposure: f32) -> ImageBuffer<3,u8>
 {
-    let mut pano = if is_360 {
+    println!("Rendering panorama...");
+    let pano = if is_360 {
         renderer.render_360(resolution/2)
     } else {
         let height = resolution;
         let width = (resolution as f32 * aspect) as usize;
         renderer.render_pano(camera, width, height)
     };
-    pano.save("PANO_TEST.png");
+    println!("Converting float to 8-bit sRGB...");
+    // pano.save("PANO_TEST.png");
     let (width, height) = (pano.width, pano.height);
     // pano.data.par_iter_mut().skip(1).step_by(3).for_each(|x| *x = *x * 0.56);
-    let mut as_u8: Vec<_> = pano.data.into_par_iter().map(|x| {
+    let as_u8: Vec<_> = pano.data.into_par_iter().map(|x| {
         // let exposure_adjusted = (x.max(0.0) * exposure).powf(1.65);
         // let compressed = (exposure_adjusted / (exposure_adjusted + 1.0));
         // (encode_sRGB(compressed) * 255.0) as u8
@@ -272,9 +276,8 @@ fn render(renderer: &PanoRenderer<3,CameraModel<f32>>, is_360: bool, camera: Cam
     return ImageBuffer::new_with_data(width, height, as_u8);
 }
 
-fn encode_sRGB(u: f32) -> f32 {
-    if u < 0.0031308 {(323.0*u)/25.0} else {1.055 * u.powf(1.0/2.4) - 0.055}
-}
+#[allow(non_snake_case)]
+#[inline] fn encode_sRGB(u: f32) -> f32 { if u < 0.0031308 {(323.0*u)/25.0} else {1.055 * u.powf(1.0/2.4) - 0.055} }
 
 fn help()
 {

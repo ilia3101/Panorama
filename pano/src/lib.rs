@@ -8,9 +8,5 @@ pub mod render;
 pub mod panorama;
 
 
-/* New version of main code (work in progress, refactoring, whatever) */
-pub mod panorama2;
-
-
 /* utility functions used throughout the panorama code */
 pub mod utils;
